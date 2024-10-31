@@ -1,52 +1,29 @@
 import React from 'react';
-import { StyleSheet } from "react-native";
 import Colors from "../constants/colors";
+import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 
-const inputPadding = 10;
+let _customLightColors: object = {};
+let _customDarkColors: object = {};
 
-export function useTheme() {
-    const colors = useColorTheme();
-    const fonts = useFonts();
-    const styles = React.useMemo(()=>StyleSheet.create({
-        input: {
-            backgroundColor: colors.inputBackgroundColor,
-            color: colors.inputTextColor,
-            fontSize: fonts.normal,
-            padding: inputPadding,
-            borderWidth: 2,
-            borderRadius: 10,
-            borderBottomColor: colors.primary,
-            borderTopColor: colors.borderColor,
-            borderRightColor: colors.borderColor,
-            borderLeftColor: colors.borderColor,
-        },
-        inputFocused: {
-            borderTopColor: colors.primary,
-            borderRightColor: colors.primary,
-            borderLeftColor: colors.primary,
-        }
-    }), [colors]);
 
-    return {
-        styles,
-        colors,
-        fonts
-    };
-}
-
-function useFonts() {
-    return {
-        larger: 60,
-        large: 40,
-        normal: 20,
-        small: 10,
-    };
-}
-
-function useColorTheme() {
+export default function useTheme() {
     const isDark = useIsDark();
-    const colors = React.useMemo(()=>Colors[isDark?'dark':'light'], [isDark]);
+    const colors = useColorTheme(isDark);
+    const currTheme: any = React.useMemo(() => {
+        const mytheme = { ...isDark ? MD3DarkTheme : MD3LightTheme };
+        return { ...mytheme, colors: { ...mytheme.colors, ...colors }, isDarkMode: isDark };
+    }, [isDark, colors]);
 
+    return currTheme;
+}
+
+export function setCustomThemeColors(customLightColors: object = {}, customDarkColors: object = {}) {
+    _customLightColors = customLightColors;
+    _customDarkColors = customDarkColors;
+}
+
+function useColorTheme(isDark: boolean) {
+    const colors = React.useMemo(() => ({ ...Colors[isDark ? 'dark' : 'light'], ...(isDark ? (_customDarkColors || {}) : (_customLightColors || {})) }), [isDark, _customLightColors, _customDarkColors]);
     return colors;
 }
 
